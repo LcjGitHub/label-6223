@@ -31,6 +31,21 @@ function createBuildingsRouter(db) {
     res.json(rows.map(formatBuilding));
   });
 
+  /** GET /api/buildings/by-era - 按年代分组查询 */
+  router.get('/by-era', (_req, res) => {
+    const rows = db.queryAll('SELECT * FROM buildings ORDER BY era ASC, id ASC');
+    const grouped = {};
+    for (const row of rows) {
+      const b = formatBuilding(row);
+      if (!grouped[b.era]) {
+        grouped[b.era] = { era: b.era, count: 0, buildings: [] };
+      }
+      grouped[b.era].buildings.push(b);
+      grouped[b.era].count++;
+    }
+    res.json(Object.values(grouped));
+  });
+
   /** GET /api/buildings/:id - 建筑详情 */
   router.get('/:id', (req, res) => {
     const row = db.queryOne('SELECT * FROM buildings WHERE id = ?', [Number(req.params.id)]);

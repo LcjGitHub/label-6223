@@ -27,6 +27,10 @@ export function fetchBuilding(id) {
  * @param {object} data
  * @returns {Promise<import('axios').AxiosResponse>}
  */
+export function fetchBuildingsByEra() {
+  return api.get('/buildings/by-era');
+}
+
 export function createBuilding(data) {
   return api.post('/buildings', data);
 }
