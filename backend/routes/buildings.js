@@ -31,6 +31,14 @@ function createBuildingsRouter(db) {
     res.json(rows.map(formatBuilding));
   });
 
+  /** GET /api/buildings/cities - 城市聚合列表 */
+  router.get('/cities', (_req, res) => {
+    const rows = db.queryAll(
+      'SELECT city, COUNT(*) AS count FROM buildings GROUP BY city ORDER BY count DESC, city ASC'
+    );
+    res.json(rows.map((r) => ({ city: r.city, count: Number(r.count) })));
+  });
+
   /** GET /api/buildings/by-era - 按年代分组查询 */
   router.get('/by-era', (_req, res) => {
     const rows = db.queryAll('SELECT * FROM buildings ORDER BY era ASC, id ASC');

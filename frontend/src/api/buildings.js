@@ -31,6 +31,10 @@ export function fetchBuildingsByEra() {
   return api.get('/buildings/by-era');
 }
 
+export function fetchCities() {
+  return api.get('/buildings/cities');
+}
+
 export function createBuilding(data) {
   return api.post('/buildings', data);
 }

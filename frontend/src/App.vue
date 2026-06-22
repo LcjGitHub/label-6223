@@ -18,6 +18,9 @@ const isNavActive = (name) => {
     if (path.startsWith('/buildings/') && from === 'timeline') return true;
     return false;
   }
+  if (name === 'cities') {
+    return path === '/cities';
+  }
   if (name === 'buttonTypes') {
     return path === '/button-types';
   }
@@ -39,6 +42,7 @@ const isNavActive = (name) => {
         <nav class="nav-links">
           <router-link to="/" class="nav-link" :class="{ 'nav-link-exact-active': isNavActive('list') }">建筑列表</router-link>
           <router-link to="/timeline" class="nav-link" :class="{ 'nav-link-exact-active': isNavActive('timeline') }">年代时间轴</router-link>
+          <router-link to="/cities" class="nav-link" :class="{ 'nav-link-exact-active': isNavActive('cities') }">城市索引</router-link>
           <router-link to="/button-types" class="nav-link" :class="{ 'nav-link-exact-active': isNavActive('buttonTypes') }">按钮类型</router-link>
           <router-link to="/statistics" class="nav-link" :class="{ 'nav-link-exact-active': isNavActive('statistics') }">统计概览</router-link>
         </nav>

@@ -1,15 +1,27 @@
 <script setup>
-import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, computed, onMounted } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { fetchBuildings, createBuilding, updateBuilding, deleteBuilding } from '../api/buildings';
 
 const router = useRouter();
+const route = useRoute();
 const buildings = ref([]);
 const loading = ref(false);
 const dialogVisible = ref(false);
 const dialogTitle = ref('新增记录');
 const editingId = ref(null);
+
+const activeCity = computed(() => route.query.city || '');
+
+const filteredBuildings = computed(() => {
+  if (!activeCity.value) return buildings.value;
+  return buildings.value.filter((b) => b.city === activeCity.value);
+});
+
+function clearCityFilter() {
+  router.replace({ path: '/', query: {} });
+}
 
 const emptyForm = () => ({
   name: '',
@@ -118,13 +130,18 @@ onMounted(loadList);
 <template>
   <div class="list-page">
     <div class="toolbar">
-      <h2>按钮样式列表</h2>
+      <div class="toolbar-left">
+        <h2>按钮样式列表</h2>
+        <el-tag v-if="activeCity" closable type="warning" class="city-filter-tag" @close="clearCityFilter">
+          城市：{{ activeCity }}
+        </el-tag>
+      </div>
       <el-button type="primary" @click="openCreate">新增记录</el-button>
     </div>
 
     <el-table
       v-loading="loading"
-      :data="buildings"
+      :data="filteredBuildings"
       stripe
       class="building-table"
       @row-click="(row) => goDetail(row.id)"
@@ -190,9 +207,19 @@ onMounted(loadList);
   margin-bottom: 16px;
 }
 
+.toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .toolbar h2 {
   font-size: 1.125rem;
   color: #5c4a3a;
+}
+
+.city-filter-tag {
+  font-size: 0.85rem;
 }
 
 .building-table {
