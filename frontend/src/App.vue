@@ -1,10 +1,16 @@
 <template>
   <el-container class="app-layout">
     <el-header class="app-header">
-      <router-link to="/" class="logo-link">
-        <span class="logo-icon">⬆</span>
-        <h1>老式电梯按钮样式图鉴</h1>
-      </router-link>
+      <div class="header-top">
+        <router-link to="/" class="logo-link">
+          <span class="logo-icon">⬆</span>
+          <h1>老式电梯按钮样式图鉴</h1>
+        </router-link>
+        <nav class="nav-links">
+          <router-link to="/" class="nav-link">建筑列表</router-link>
+          <router-link to="/statistics" class="nav-link">统计概览</router-link>
+        </nav>
+      </div>
       <p class="subtitle">收录各年代建筑中仍存或已退役的电梯按钮样式</p>
     </el-header>
     <el-main>
@@ -38,6 +44,39 @@ body {
   display: flex;
   flex-direction: column;
   gap: 6px;
+}
+
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+}
+
+.nav-links {
+  display: flex;
+  gap: 8px;
+}
+
+.nav-link {
+  padding: 8px 16px;
+  font-size: 0.9rem;
+  color: #f5f0e8;
+  text-decoration: none;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  opacity: 0.85;
+}
+
+.nav-link:hover {
+  background: rgba(255, 255, 255, 0.15);
+  opacity: 1;
+}
+
+.nav-link.router-link-active {
+  background: rgba(255, 255, 255, 0.25);
+  opacity: 1;
+  font-weight: 600;
 }
 
 .logo-link {
