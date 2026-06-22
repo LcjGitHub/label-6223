@@ -7,9 +7,9 @@
           <h1>老式电梯按钮样式图鉴</h1>
         </router-link>
         <nav class="nav-links">
-          <router-link to="/" class="nav-link">建筑列表</router-link>
-          <router-link to="/button-types" class="nav-link">按钮类型</router-link>
-          <router-link to="/statistics" class="nav-link">统计概览</router-link>
+          <router-link to="/" class="nav-link" exact-active-class="nav-link-exact-active">建筑列表</router-link>
+          <router-link to="/button-types" class="nav-link" exact-active-class="nav-link-exact-active">按钮类型</router-link>
+          <router-link to="/statistics" class="nav-link" exact-active-class="nav-link-exact-active">统计概览</router-link>
         </nav>
       </div>
       <p class="subtitle">收录各年代建筑中仍存或已退役的电梯按钮样式</p>
@@ -74,7 +74,7 @@ body {
   opacity: 1;
 }
 
-.nav-link.router-link-active {
+.nav-link-exact-active {
   background: rgba(255, 255, 255, 0.25);
   opacity: 1;
   font-weight: 600;
@@ -86,12 +86,6 @@ body {
   gap: 12px;
   text-decoration: none;
   color: inherit;
-}
-
-.logo-link.router-link-active {
-  background: none;
-  opacity: 1;
-  font-weight: inherit;
 }
 
 .logo-icon {

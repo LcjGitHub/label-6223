@@ -121,7 +121,6 @@ onMounted(loadList);
     </div>
 
     <el-table v-loading="loading" :data="buttonTypes" stripe class="type-table">
-      <el-table-column prop="id" label="编号" width="80" />
       <el-table-column prop="type_name" label="类型名称" min-width="180" />
       <el-table-column prop="material" label="材质" width="120" />
       <el-table-column prop="shape" label="形状" width="120" />
@@ -146,7 +145,7 @@ onMounted(loadList);
           <el-input v-model="form.shape" placeholder="如：圆形" />
         </el-form-item>
         <el-form-item label="常见年代" required>
-          <el-input v-model="form.common_era" placeholder="如：1910s-1930s" />
+          <el-input v-model="form.common_era" placeholder="如：1910年代至1930年代" />
         </el-form-item>
       </el-form>
       <template #footer>
