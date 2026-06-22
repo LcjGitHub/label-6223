@@ -1,3 +1,33 @@
+<script setup>
+import { computed } from 'vue';
+import { useRoute } from 'vue-router';
+
+const route = useRoute();
+
+const isNavActive = (name) => {
+  const path = route.path;
+  const from = route.query.from;
+
+  if (name === 'list') {
+    if (path === '/') return true;
+    if (path.startsWith('/buildings/') && from !== 'timeline') return true;
+    return false;
+  }
+  if (name === 'timeline') {
+    if (path === '/timeline') return true;
+    if (path.startsWith('/buildings/') && from === 'timeline') return true;
+    return false;
+  }
+  if (name === 'buttonTypes') {
+    return path === '/button-types';
+  }
+  if (name === 'statistics') {
+    return path === '/statistics';
+  }
+  return false;
+};
+</script>
+
 <template>
   <el-container class="app-layout">
     <el-header class="app-header">
@@ -7,10 +37,10 @@
           <h1>老式电梯按钮样式图鉴</h1>
         </router-link>
         <nav class="nav-links">
-          <router-link to="/" class="nav-link" exact-active-class="nav-link-exact-active">建筑列表</router-link>
-          <router-link to="/timeline" class="nav-link" exact-active-class="nav-link-exact-active">年代时间轴</router-link>
-          <router-link to="/button-types" class="nav-link" exact-active-class="nav-link-exact-active">按钮类型</router-link>
-          <router-link to="/statistics" class="nav-link" exact-active-class="nav-link-exact-active">统计概览</router-link>
+          <router-link to="/" class="nav-link" :class="{ 'nav-link-exact-active': isNavActive('list') }">建筑列表</router-link>
+          <router-link to="/timeline" class="nav-link" :class="{ 'nav-link-exact-active': isNavActive('timeline') }">年代时间轴</router-link>
+          <router-link to="/button-types" class="nav-link" :class="{ 'nav-link-exact-active': isNavActive('buttonTypes') }">按钮类型</router-link>
+          <router-link to="/statistics" class="nav-link" :class="{ 'nav-link-exact-active': isNavActive('statistics') }">统计概览</router-link>
         </nav>
       </div>
       <p class="subtitle">收录各年代建筑中仍存或已退役的电梯按钮样式</p>

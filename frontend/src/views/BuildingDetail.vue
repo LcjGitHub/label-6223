@@ -1,6 +1,6 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, onMounted, watch, computed } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import { fetchBuilding } from '../api/buildings';
 
@@ -9,8 +9,12 @@ const props = defineProps({
 });
 
 const router = useRouter();
+const route = useRoute();
 const building = ref(null);
 const loading = ref(false);
+
+const fromPage = computed(() => route.query.from || 'list');
+const backText = computed(() => (fromPage.value === 'timeline' ? '← 返回时间轴' : '← 返回列表'));
 
 /**
  * 加载建筑详情
@@ -29,10 +33,14 @@ async function loadDetail() {
 }
 
 /**
- * 返回列表页
+ * 返回上一级页面
  */
 function goBack() {
-  router.push('/');
+  if (fromPage.value === 'timeline') {
+    router.push('/timeline');
+  } else {
+    router.push('/');
+  }
 }
 
 onMounted(loadDetail);
@@ -41,7 +49,7 @@ watch(() => props.id, loadDetail);
 
 <template>
   <div v-loading="loading" class="detail-page">
-    <el-button class="back-btn" @click="goBack">← 返回列表</el-button>
+    <el-button class="back-btn" @click="goBack">{{ backText }}</el-button>
 
     <template v-if="building">
       <div class="detail-card">

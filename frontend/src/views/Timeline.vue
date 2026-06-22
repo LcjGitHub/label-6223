@@ -21,7 +21,14 @@ async function loadTimeline() {
 }
 
 function goDetail(id) {
-  router.push(`/buildings/${id}`);
+  router.push({ path: `/buildings/${id}`, query: { from: 'timeline' } });
+}
+
+function handleKeydown(e, id) {
+  if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault();
+    goDetail(id);
+  }
 }
 
 onMounted(loadTimeline);
@@ -57,14 +64,18 @@ onMounted(loadTimeline);
               v-for="building in group.buildings"
               :key="building.id"
               class="building-card"
+              tabindex="0"
+              role="button"
+              :aria-label="`查看${building.name}详情`"
               @click="goDetail(building.id)"
+              @keydown="handleKeydown($event, building.id)"
             >
               <div class="card-main">
                 <h4 class="card-name">{{ building.name }}</h4>
                 <span class="card-city">{{ building.city }}</span>
               </div>
               <div class="card-meta">
-                <el-tag size="small" :type="building.still_in_use ? 'success' : 'info'">
+                <el-tag size="small" type="info">
                   {{ building.button_type }}
                 </el-tag>
               </div>
@@ -176,11 +187,17 @@ export default {
   transition: all 0.2s ease;
 }
 
-.building-card:hover {
+.building-card:hover,
+.building-card:focus-visible {
   background: #f5efe3;
   border-color: #c9a227;
   box-shadow: 0 2px 8px rgba(201, 162, 39, 0.15);
   transform: translateX(4px);
+  outline: none;
+}
+
+.building-card:focus-visible {
+  box-shadow: 0 0 0 3px rgba(201, 162, 39, 0.3), 0 2px 8px rgba(201, 162, 39, 0.15);
 }
 
 .card-main {
