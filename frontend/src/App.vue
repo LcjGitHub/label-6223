@@ -8,6 +8,7 @@
         </router-link>
         <nav class="nav-links">
           <router-link to="/" class="nav-link">建筑列表</router-link>
+          <router-link to="/button-types" class="nav-link">按钮类型</router-link>
           <router-link to="/statistics" class="nav-link">统计概览</router-link>
         </nav>
       </div>

@@ -76,6 +76,18 @@ function initSchema() {
       created_at TEXT DEFAULT (datetime('now'))
     )
   `);
+
+  db.run(`
+    CREATE TABLE IF NOT EXISTS button_types (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      type_name TEXT NOT NULL,
+      material TEXT NOT NULL,
+      shape TEXT NOT NULL,
+      common_era TEXT NOT NULL,
+      created_at TEXT DEFAULT (datetime('now'))
+    )
+  `);
+
   persist();
 }
 
@@ -105,6 +117,31 @@ function seedData() {
 }
 
 /**
+ * 种子数据：按钮类型图鉴初始数据
+ */
+function seedButtonTypes() {
+  const count = queryOne('SELECT COUNT(*) AS cnt FROM button_types');
+  if (Number(count?.cnt) > 0) return;
+
+  const seeds = [
+    ['黄铜圆形机械按钮', '黄铜', '圆形', '1910s-1930s'],
+    ['黑色胶木方形按钮', '胶木', '方形', '1920s-1940s'],
+    ['镀铬金属拨杆式', '镀铬金属', '拨杆形', '1930s-1950s'],
+    ['绿色圆形荧光按钮', '荧光塑料', '圆形', '1950s-1960s'],
+    ['铸铁星形装饰按钮', '铸铁', '星形', '1900s-1920s'],
+  ];
+
+  for (const row of seeds) {
+    db.run(
+      `INSERT INTO button_types (type_name, material, shape, common_era)
+       VALUES (?, ?, ?, ?)`,
+      row
+    );
+  }
+  persist();
+}
+
+/**
  * 初始化并打开 SQLite 数据库
  * @returns {Promise<{ queryAll: typeof queryAll, queryOne: typeof queryOne, execute: typeof execute }>}
  */
@@ -122,6 +159,7 @@ async function initDb() {
 
   initSchema();
   seedData();
+  seedButtonTypes();
 
   return { queryAll, queryOne, execute };
 }

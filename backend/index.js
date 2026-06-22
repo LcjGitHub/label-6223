@@ -3,6 +3,7 @@ const cors = require('cors');
 const { initDb } = require('./db');
 const createBuildingsRouter = require('./routes/buildings');
 const createStatisticsRouter = require('./routes/statistics');
+const createButtonTypesRouter = require('./routes/buttonTypes');
 
 const PORT = 5000;
 
@@ -22,6 +23,7 @@ async function start() {
 
   app.use('/api/buildings', createBuildingsRouter(db));
   app.use('/api/statistics', createStatisticsRouter(db));
+  app.use('/api/button-types', createButtonTypesRouter(db));
 
   app.listen(PORT, () => {
     console.log(`老式电梯按钮样式图鉴 API 运行于 http://localhost:${PORT}`);
