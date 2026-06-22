@@ -1,15 +1,21 @@
 <script setup>
-import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
-import * as echarts from 'echarts';
 import { fetchStatistics } from '../api/statistics';
 
 const loading = ref(false);
 const summary = ref({ total: 0, in_use: 0, retired: 0 });
 const byCity = ref([]);
 
-const chartRef = ref(null);
-let chartInstance = null;
+const maxValue = computed(() => {
+  if (byCity.value.length === 0) return 0;
+  return Math.max(...byCity.value.map((item) => item.total));
+});
+
+function getBarHeight(value) {
+  if (maxValue.value === 0) return '0%';
+  return `${(value / maxValue.value) * 100}%`;
+}
 
 async function loadStatistics() {
   loading.value = true;
@@ -17,8 +23,6 @@ async function loadStatistics() {
     const { data } = await fetchStatistics();
     summary.value = data.summary;
     byCity.value = data.byCity;
-    await nextTick();
-    renderChart();
   } catch {
     ElMessage.error('加载统计数据失败，请确认后端已启动');
   } finally {
@@ -26,93 +30,19 @@ async function loadStatistics() {
   }
 }
 
-function renderChart() {
-  if (!chartRef.value) return;
-
-  if (!chartInstance) {
-    chartInstance = echarts.init(chartRef.value);
-  }
-
-  const cities = byCity.value.map((item) => item.city);
-  const totals = byCity.value.map((item) => item.total);
-  const inUseList = byCity.value.map((item) => item.in_use);
-  const retiredList = byCity.value.map((item) => item.retired);
-
-  const option = {
-    tooltip: {
-      trigger: 'axis',
-      axisPointer: { type: 'shadow' },
-    },
-    legend: {
-      data: ['建筑总数', '仍在用', '已退役'],
-      top: 0,
-    },
-    grid: {
-      left: '3%',
-      right: '4%',
-      bottom: '3%',
-      top: '50px',
-      containLabel: true,
-    },
-    xAxis: {
-      type: 'category',
-      data: cities,
-      axisLabel: { color: '#5c4a3a' },
-    },
-    yAxis: {
-      type: 'value',
-      minInterval: 1,
-      axisLabel: { color: '#5c4a3a' },
-    },
-    series: [
-      {
-        name: '建筑总数',
-        type: 'bar',
-        data: totals,
-        itemStyle: { color: '#8b6914', borderRadius: [4, 4, 0, 0] },
-        barMaxWidth: 40,
-      },
-      {
-        name: '仍在用',
-        type: 'bar',
-        data: inUseList,
-        itemStyle: { color: '#67c23a', borderRadius: [4, 4, 0, 0] },
-        barMaxWidth: 40,
-      },
-      {
-        name: '已退役',
-        type: 'bar',
-        data: retiredList,
-        itemStyle: { color: '#909399', borderRadius: [4, 4, 0, 0] },
-        barMaxWidth: 40,
-      },
-    ],
-  };
-
-  chartInstance.setOption(option);
-}
-
-function handleResize() {
-  chartInstance?.resize();
-}
-
-onMounted(() => {
-  loadStatistics();
-  window.addEventListener('resize', handleResize);
-});
-
-onBeforeUnmount(() => {
-  window.removeEventListener('resize', handleResize);
-  chartInstance?.dispose();
-  chartInstance = null;
-});
+onMounted(loadStatistics);
 </script>
 
 <template>
   <div class="statistics-page">
     <div class="page-header">
-      <h2>统计概览</h2>
-      <p class="header-subtitle">各城市老式电梯建筑数据统计</p>
+      <div class="header-left">
+        <h2>统计概览</h2>
+        <p class="header-subtitle">各城市老式电梯建筑数据统计</p>
+      </div>
+      <el-button type="primary" :loading="loading" @click="loadStatistics">
+        🔄 刷新数据
+      </el-button>
     </div>
 
     <div v-loading="loading" class="stats-content">
@@ -145,29 +75,45 @@ onBeforeUnmount(() => {
       <el-card shadow="hover" class="chart-card">
         <div class="chart-header">
           <h3>各城市建筑分布</h3>
-          <span class="chart-tip">按总数降序排列</span>
+          <div class="chart-legend">
+            <span class="legend-item">
+              <span class="legend-dot dot-total"></span>
+              建筑总数
+            </span>
+            <span class="legend-item">
+              <span class="legend-dot dot-inuse"></span>
+              仍在用
+            </span>
+            <span class="legend-item">
+              <span class="legend-dot dot-retired"></span>
+              已退役
+            </span>
+          </div>
         </div>
-        <div ref="chartRef" class="chart-container"></div>
-      </el-card>
 
-      <el-card shadow="hover" class="table-card" v-if="byCity.length > 0">
-        <div class="chart-header">
-          <h3>各城市明细</h3>
+        <div v-if="byCity.length === 0" class="chart-empty">
+          <div class="empty-icon">📊</div>
+          <div class="empty-text">暂无数据</div>
         </div>
-        <el-table :data="byCity" stripe>
-          <el-table-column prop="city" label="城市" />
-          <el-table-column prop="total" label="建筑总数" align="center" />
-          <el-table-column prop="in_use" label="仍在用" align="center">
-            <template #default="{ row }">
-              <el-tag type="success" size="small">{{ row.in_use }}</el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column prop="retired" label="已退役" align="center">
-            <template #default="{ row }">
-              <el-tag type="info" size="small">{{ row.retired }}</el-tag>
-            </template>
-          </el-table-column>
-        </el-table>
+
+        <div v-else class="chart-container">
+          <div class="chart-bars">
+            <div v-for="city in byCity" :key="city.city" class="bar-group">
+              <div class="bar-group-inner">
+                <div class="bar bar-total" :style="{ height: getBarHeight(city.total) }">
+                  <span class="bar-value">{{ city.total }}</span>
+                </div>
+                <div class="bar bar-inuse" :style="{ height: getBarHeight(city.in_use) }">
+                  <span class="bar-value">{{ city.in_use }}</span>
+                </div>
+                <div class="bar bar-retired" :style="{ height: getBarHeight(city.retired) }">
+                  <span class="bar-value">{{ city.retired }}</span>
+                </div>
+              </div>
+              <div class="bar-label">{{ city.city }}</div>
+            </div>
+          </div>
+        </div>
       </el-card>
     </div>
   </div>
@@ -185,6 +131,9 @@ onBeforeUnmount(() => {
   border-radius: 8px;
   padding: 20px 24px;
   box-shadow: 0 2px 12px rgba(92, 74, 58, 0.08);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .page-header h2 {
@@ -273,14 +222,12 @@ onBeforeUnmount(() => {
   line-height: 1.2;
 }
 
-.chart-card,
-.table-card {
+.chart-card {
   border: none !important;
   border-radius: 12px !important;
 }
 
-.chart-card :deep(.el-card__body),
-.table-card :deep(.el-card__body) {
+.chart-card :deep(.el-card__body) {
   padding: 20px 24px;
 }
 
@@ -288,7 +235,7 @@ onBeforeUnmount(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
 .chart-header h3 {
@@ -296,19 +243,143 @@ onBeforeUnmount(() => {
   color: #5c4a3a;
 }
 
-.chart-tip {
-  font-size: 0.75rem;
+.chart-legend {
+  display: flex;
+  gap: 16px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: #8b7a6b;
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  display: inline-block;
+}
+
+.dot-total {
+  background: #8b6914;
+}
+
+.dot-inuse {
+  background: #67c23a;
+}
+
+.dot-retired {
+  background: #909399;
+}
+
+.chart-empty {
+  height: 320px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.empty-icon {
+  font-size: 48px;
+  opacity: 0.4;
+}
+
+.empty-text {
+  font-size: 0.9rem;
   color: #8b7a6b;
 }
 
 .chart-container {
   width: 100%;
-  height: 360px;
+  height: 320px;
+}
+
+.chart-bars {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-around;
+  height: 100%;
+  padding: 0 20px 0 20px;
+  position: relative;
+}
+
+.bar-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  max-width: 140px;
+}
+
+.bar-group-inner {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 8px;
+  height: 260px;
+  width: 100%;
+}
+
+.bar {
+  width: 28px;
+  border-radius: 4px 4px 0 0;
+  position: relative;
+  transition: height 0.5s ease;
+  min-height: 2px;
+  display: flex;
+  justify-content: center;
+}
+
+.bar-total {
+  background: linear-gradient(180deg, #a87d1e 0%, #8b6914 100%);
+}
+
+.bar-inuse {
+  background: linear-gradient(180deg, #85ce61 0%, #67c23a 100%);
+}
+
+.bar-retired {
+  background: linear-gradient(180deg, #a6a9ad 0%, #909399 100%);
+}
+
+.bar-value {
+  position: absolute;
+  top: -20px;
+  font-size: 0.75rem;
+  color: #5c4a3a;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.bar-label {
+  margin-top: 10px;
+  font-size: 0.875rem;
+  color: #5c4a3a;
+  font-weight: 500;
 }
 
 @media (max-width: 768px) {
   .summary-cards {
     grid-template-columns: 1fr;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .bar-group-inner {
+    gap: 4px;
+  }
+
+  .bar {
+    width: 18px;
   }
 }
 </style>

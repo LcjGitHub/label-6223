@@ -2,7 +2,7 @@
   <el-container class="app-layout">
     <el-header class="app-header">
       <div class="header-top">
-        <router-link to="/" class="logo-link">
+        <router-link to="/" class="logo-link" active-class="" exact-active-class="">
           <span class="logo-icon">⬆</span>
           <h1>老式电梯按钮样式图鉴</h1>
         </router-link>
@@ -85,6 +85,12 @@ body {
   gap: 12px;
   text-decoration: none;
   color: inherit;
+}
+
+.logo-link.router-link-active {
+  background: none;
+  opacity: 1;
+  font-weight: inherit;
 }
 
 .logo-icon {
